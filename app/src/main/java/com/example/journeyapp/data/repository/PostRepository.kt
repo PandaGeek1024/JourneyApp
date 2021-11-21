@@ -5,9 +5,15 @@ import com.example.journeyapp.domain.repository.PostRepository
 import javax.inject.Inject
 
 class PostRepositoryImpl @Inject constructor(
-    private val postDataSource: PostDataSource
+    private val postDataSource: PostDataSource,
+    private val localDataSource: PostLocalDataSource
 ) : PostRepository {
+
     override suspend fun getPosts(): List<Post> {
-        return postDataSource.fetchPosts()
+        val posts = postDataSource.fetchPosts()
+        posts.forEach {
+            localDataSource.insertPost(it)
+        }
+        return localDataSource.getAll()
     }
 }
