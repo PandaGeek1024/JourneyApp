@@ -17,7 +17,6 @@ class MainActivity : AppCompatActivity() {
         toolbar.title = getString(R.string.app_name)
         setSupportActionBar(toolbar)
 
-        // Add product list fragment if this is first creation
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .add(R.id.fragmentContainer, ListFragment.newInstance()).commit()
