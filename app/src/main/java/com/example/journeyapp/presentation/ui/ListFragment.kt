@@ -2,52 +2,70 @@ package com.example.journeyapp.presentation.ui
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import com.example.journeyapp.R
+import android.widget.Toast
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DividerItemDecoration
+import com.example.journeyapp.databinding.FragmentListBinding
 import com.example.journeyapp.databinding.ListItemBinding
-import com.example.journeyapp.presentation.ui.placeholder.PlaceholderContent
+import com.example.journeyapp.domain.data.Post
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ListFragment : Fragment() {
+    private val viewModel: ListViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private var adapter: PostAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_list_list, container, false)
+    ): View {
+        val binding = FragmentListBinding.inflate(inflater, container, false)
 
-        // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                layoutManager = LinearLayoutManager(context)
-                adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS)
-            }
+        adapter = PostAdapter(emptyList()) {
+
         }
-        return view
+        binding.list.let {
+            it.adapter = adapter
+            val layoutManager = LinearLayoutManager(requireContext())
+            it.layoutManager = layoutManager
+            it.addItemDecoration(DividerItemDecoration(it.context, layoutManager.orientation))
+        }
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.errorMessage.observe(viewLifecycleOwner, Observer {
+            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+        })
+        viewModel.allPosts.observe(viewLifecycleOwner, {
+            adapter?.updateData(it)
+        })
     }
 
     companion object {
-
-
         @JvmStatic
         fun newInstance() = ListFragment()
     }
 }
 
-class MyItemRecyclerViewAdapter(
-    private val values: List<PlaceholderContent.PlaceholderItem>
-) : RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder>() {
+class PostAdapter(
+    private var items: List<Post>,
+    private val listener: (Post) -> Unit
+) : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
+
+    fun updateData(items: List<Post>) {
+        this.items = items
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -62,19 +80,19 @@ class MyItemRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = values[position]
-        holder.idView.text = item.id
-        holder.contentView.text = item.content
+        val item = items[holder.bindingAdapterPosition]
+        holder.bind(item)
+        holder.itemView.setOnClickListener {
+            listener(item)
+        }
     }
 
-    override fun getItemCount(): Int = values.size
+    override fun getItemCount(): Int = items.size
 
-    inner class ViewHolder(binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        val idView: TextView = binding.itemNumber
-        val contentView: TextView = binding.content
-
-        override fun toString(): String {
-            return super.toString() + " '" + contentView.text + "'"
+    inner class ViewHolder(private val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Post) {
+            binding.title.text = item.title
+            binding.content.text = item.body
         }
     }
 

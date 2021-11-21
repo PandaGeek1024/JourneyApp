@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import com.example.journeyapp.R
+import com.example.journeyapp.domain.data.Post
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,15 +24,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Shows the product detail fragment  */
-//    fun show(product: Product) {
-//        val productFragment: ProductFragment = ProductFragment.forProduct(product.getId())
-//        supportFragmentManager
-//            .beginTransaction()
-//            .addToBackStack("product")
-//            .replace(
-//                R.id.fragment_container,
-//                productFragment, null
-//            ).commit()
-//    }
+
+    fun openDetail(post: Post) {
+
+    }
 }
